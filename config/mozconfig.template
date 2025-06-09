@@ -1,0 +1,59 @@
+# HenFire Browser Build Configuration
+# Based on Firefox with custom optimizations
+
+# Build type
+ac_add_options --enable-application=browser
+
+# Optimization
+ac_add_options --enable-optimize
+ac_add_options --disable-debug
+ac_add_options --disable-debug-symbols
+ac_add_options --enable-strip
+
+# Performance optimizations
+ac_add_options --enable-lto
+ac_add_options --enable-rust-simd
+ac_add_options --enable-hardening
+
+# Disable unnecessary features for cleaner build
+ac_add_options --disable-tests
+ac_add_options --disable-crashreporter
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-updater
+ac_add_options --disable-signmar
+ac_add_options --disable-verify-mar
+
+# Privacy features
+ac_add_options --disable-telemetry-reporting
+ac_add_options --disable-default-browser-agent
+
+# Custom branding
+ac_add_options --with-app-name=henfire
+ac_add_options --with-app-basename=HenFire
+ac_add_options --with-branding=browser/branding/henfire
+
+# macOS specific optimizations
+ac_add_options --target=x86_64-apple-darwin
+ac_add_options --enable-macos-target=10.15
+
+# Memory and performance
+export MOZ_OPTIMIZE=1
+export MOZ_MAKE_FLAGS="-j$(sysctl -n hw.ncpu)"
+
+# Custom defines for HenFire features
+ac_add_options --with-defines=HENFIRE_BUILD
+ac_add_options --with-defines=HENFIRE_MEMORY_MANAGER
+ac_add_options --with-defines=HENFIRE_CLEAN_UI
+
+# Rust optimization
+export RUSTC_OPT_LEVEL=2
+export CARGO_PROFILE_RELEASE_LTO=true
+
+# Compiler optimizations for macOS
+export CC=clang
+export CXX=clang++
+export CFLAGS="-O3 -march=native -mtune=native"
+export CXXFLAGS="-O3 -march=native -mtune=native"
+
+# Link-time optimization
+export LDFLAGS="-Wl,-dead_strip"

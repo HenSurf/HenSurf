@@ -1,0 +1,319 @@
+/* HenFire Clean UI Stylesheet */
+/* Provides a minimalist, clean interface for Firefox */
+
+/* Hide unnecessary UI elements */
+#pocket-button,
+#fxa-toolbar-menu-button,
+#pageActionButton,
+#reader-mode-button,
+#tracking-protection-icon-container,
+#identity-icon-labels,
+.tab-close-button:not([selected]):not(:hover),
+#new-tab-button,
+#alltabs-button {
+  display: none !important;
+}
+
+/* Simplify toolbar */
+#nav-bar {
+  padding: 2px 8px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: linear-gradient(to bottom, #f6f6f6, #e8e8e8) !important;
+}
+
+/* Clean address bar */
+#urlbar {
+  border: 1px solid #c0c0c0 !important;
+  border-radius: 4px !important;
+  background: white !important;
+  margin: 2px 4px !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+}
+
+#urlbar:focus {
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
+}
+
+/* Simplify tabs */
+.tabbrowser-tab {
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.tabbrowser-tab[selected] {
+  background: white !important;
+  border-bottom: 2px solid #4a90e2 !important;
+}
+
+.tabbrowser-tab:not([selected]):hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.tab-content {
+  padding: 8px 12px !important;
+  margin: 0 !important;
+}
+
+.tab-label {
+  font-size: 12px !important;
+  font-weight: normal !important;
+}
+
+/* Clean tab bar */
+#TabsToolbar {
+  background: #f0f0f0 !important;
+  border-bottom: 1px solid #d0d0d0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Minimize tab close buttons */
+.tab-close-button {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 2px !important;
+  opacity: 0.6 !important;
+}
+
+.tab-close-button:hover {
+  opacity: 1 !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+  border-radius: 2px !important;
+}
+
+/* Clean bookmarks toolbar */
+#PersonalToolbar {
+  background: #f8f8f8 !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  padding: 2px 8px !important;
+}
+
+.bookmark-item {
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  margin: 1px !important;
+  border-radius: 2px !important;
+}
+
+.bookmark-item:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Simplify context menus */
+menupopup {
+  border: 1px solid #c0c0c0 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  background: white !important;
+  padding: 4px 0 !important;
+}
+
+menuitem {
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  border: none !important;
+}
+
+menuitem:hover {
+  background: #4a90e2 !important;
+  color: white !important;
+}
+
+menuseparator {
+  border-top: 1px solid #e0e0e0 !important;
+  margin: 4px 8px !important;
+}
+
+/* Clean sidebar */
+#sidebar-box {
+  border-right: 1px solid #d0d0d0 !important;
+  background: #f8f8f8 !important;
+}
+
+#sidebar-header {
+  background: #f0f0f0 !important;
+  border-bottom: 1px solid #d0d0d0 !important;
+  padding: 8px !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+
+/* Minimize status bar elements */
+#status-bar {
+  background: #f0f0f0 !important;
+  border-top: 1px solid #d0d0d0 !important;
+  padding: 2px 8px !important;
+  font-size: 11px !important;
+}
+
+/* Clean notification bars */
+.notificationbox-stack {
+  background: transparent !important;
+}
+
+notification {
+  background: linear-gradient(to bottom, #fff3cd, #ffeaa7) !important;
+  border: 1px solid #ffc107 !important;
+  border-radius: 4px !important;
+  margin: 4px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+}
+
+/* Clean buttons */
+toolbarbutton {
+  border: none !important;
+  border-radius: 3px !important;
+  padding: 4px 6px !important;
+  margin: 1px !important;
+  background: transparent !important;
+}
+
+toolbarbutton:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+toolbarbutton[checked="true"] {
+  background: rgba(74, 144, 226, 0.2) !important;
+}
+
+/* Clean scrollbars (WebKit-based) */
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0 !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0 !important;
+  border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0 !important;
+}
+
+/* Memory usage indicator (custom HenFire feature) */
+#henfire-memory-indicator {
+  background: #f8f8f8 !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 3px !important;
+  padding: 2px 6px !important;
+  margin: 0 4px !important;
+  font-size: 10px !important;
+  color: #666 !important;
+}
+
+#henfire-memory-indicator.warning {
+  background: #fff3cd !important;
+  border-color: #ffc107 !important;
+  color: #856404 !important;
+}
+
+#henfire-memory-indicator.critical {
+  background: #f8d7da !important;
+  border-color: #dc3545 !important;
+  color: #721c24 !important;
+}
+
+/* Suspended tab indicator */
+.tabbrowser-tab[henfire-suspended] {
+  opacity: 0.6 !important;
+}
+
+.tabbrowser-tab[henfire-suspended] .tab-label::after {
+  content: " 💤" !important;
+  font-size: 10px !important;
+}
+
+/* Clean preferences/settings pages */
+.main-content {
+  background: white !important;
+  padding: 20px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.pane-container {
+  background: transparent !important;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 800px) {
+  .tab-content {
+    padding: 6px 8px !important;
+  }
+  
+  .tab-label {
+    font-size: 11px !important;
+  }
+  
+  #urlbar {
+    font-size: 12px !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #nav-bar {
+    background: linear-gradient(to bottom, #3a3a3a, #2a2a2a) !important;
+  }
+  
+  #urlbar {
+    background: #404040 !important;
+    border-color: #606060 !important;
+    color: white !important;
+  }
+  
+  #TabsToolbar {
+    background: #2a2a2a !important;
+    border-bottom-color: #404040 !important;
+  }
+  
+  .tabbrowser-tab[selected] {
+    background: #404040 !important;
+  }
+  
+  menupopup {
+    background: #2a2a2a !important;
+    border-color: #404040 !important;
+    color: white !important;
+  }
+  
+  #henfire-memory-indicator {
+    background: #404040 !important;
+    border-color: #606060 !important;
+    color: #ccc !important;
+  }
+}
+
+/* Animation for smooth transitions */
+.tabbrowser-tab,
+toolbarbutton,
+#urlbar {
+  transition: all 0.15s ease !important;
+}
+
+/* Focus indicators for accessibility */
+*:focus {
+  outline: 2px solid #4a90e2 !important;
+  outline-offset: 1px !important;
+}
+
+/* Print styles */
+@media print {
+  #nav-bar,
+  #TabsToolbar,
+  #PersonalToolbar,
+  #sidebar-box {
+    display: none !important;
+  }
+}

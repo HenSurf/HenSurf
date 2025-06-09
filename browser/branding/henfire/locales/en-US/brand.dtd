@@ -1,0 +1,72 @@
+<!-- HenFire Browser Branding Strings -->
+
+<!ENTITY brandShortName "HenFire">
+<!ENTITY brandShorterName "HenFire">
+<!ENTITY brandFullName "HenFire Browser">
+<!ENTITY vendorShortName "HenFire Project">
+
+<!ENTITY trademarkInfo.part1 "">
+
+<!-- LOCALIZATION NOTE (homePageSingleStartMain, homePageImport, homePageMigration):
+ These strings will be used to generate the home page URL for the start page.
+ homePageSingleStartMain should be used for the main home page URL.
+ homePageImport should be used for the home page URL when importing bookmarks.
+ homePageMigration should be used for the home page URL when migrating from another browser. -->
+<!ENTITY homePageSingleStartMain "about:home">
+<!ENTITY homePageImport "about:home">
+<!ENTITY homePageMigration "about:home">
+
+<!-- LOCALIZATION NOTE (update.downloadAndInstallButton.label, update.downloadAndInstallButton.accesskey):
+ The download and install button in the update notification. -->
+<!ENTITY update.downloadAndInstallButton.label "Download and Install">
+<!ENTITY update.downloadAndInstallButton.accesskey "D">
+
+<!-- LOCALIZATION NOTE (warningOutdatedVersion.goToDownloadPage.label,
+ warningOutdatedVersion.goToDownloadPage.accesskey):
+ Shown in the warning notification bar when the user's version of HenFire is outdated. -->
+<!ENTITY warningOutdatedVersion.goToDownloadPage.label "Get the latest version">
+<!ENTITY warningOutdatedVersion.goToDownloadPage.accesskey "G">
+
+<!-- LOCALIZATION NOTE (syncTabsMenu3.label): This appears in the history menu -->
+<!ENTITY syncTabsMenu3.label "Synced Tabs">
+
+<!-- LOCALIZATION NOTE (syncBrand.shortName.label, syncBrand.fullName.label):
+ These are used to define the sync brand name. -->
+<!ENTITY syncBrand.shortName.label "Sync">
+<!ENTITY syncBrand.fullName.label "HenFire Sync">
+
+<!-- LOCALIZATION NOTE (syncMenu.label):
+ This appears in the tools menu. -->
+<!ENTITY syncMenu.label "Sync">
+
+<!-- LOCALIZATION NOTE (remoteTabsMenu.label): This appears in the history menu -->
+<!ENTITY remoteTabsMenu.label "Synced Tabs">
+
+<!-- LOCALIZATION NOTE (addonBarCloseButton.tooltip): This appears as a tooltip
+ when hovering over the close button for the add-on bar. -->
+<!ENTITY addonBarCloseButton.tooltip "Close Add-on Bar">
+
+<!-- LOCALIZATION NOTE (quitApplicationCmdMac.label): This appears in the HenFire
+ menu on Mac. -->
+<!ENTITY quitApplicationCmdMac.label "Quit HenFire">
+<!ENTITY quitApplicationCmdMac.key "Q">
+
+<!-- LOCALIZATION NOTE (hideThisAppCmdMac.label, hideOtherAppsCmdMac.label,
+ showAllAppsCmdMac.label): These appear in the HenFire menu on Mac. -->
+<!ENTITY hideThisAppCmdMac.label "Hide HenFire">
+<!ENTITY hideThisAppCmdMac.key "H">
+<!ENTITY hideOtherAppsCmdMac.label "Hide Others">
+<!ENTITY showAllAppsCmdMac.label "Show All">
+
+<!-- LOCALIZATION NOTE (preferencesCmdMac.label): This appears in the HenFire
+ menu on Mac. -->
+<!ENTITY preferencesCmdMac.label "Preferences…">
+<!ENTITY preferencesCmdMac.key ",">
+<!ENTITY preferencesCmdMac.modifiers "accel">
+
+<!-- LOCALIZATION NOTE (servicesMenuMac.label): This appears in the HenFire
+ menu on Mac. -->
+<!ENTITY servicesMenuMac.label "Services">
+
+<!-- LOCALIZATION NOTE (aboutProduct.label): This appears in the HenFire menu on Mac. -->
+<!ENTITY aboutProduct.label "About HenFire">

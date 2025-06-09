@@ -1,0 +1,82 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+<!ENTITY brandShortName "HenSurf">
+<!ENTITY brandShorterName "HenSurf">
+<!ENTITY brandFullName "HenSurf Browser">
+<!ENTITY vendorShortName "HenSurf Project">
+
+<!ENTITY trademarkInfo.part1 "">
+
+<!-- LOCALIZATION NOTE (homePageSingleStartMain, homePageImport, homePageMigration):
+ These strings will be used to generate the home page URL for the start page.
+ homePageSingleStartMain should be used for the main home page URL.
+ homePageImport should be used for the home page URL when importing bookmarks.
+ homePageMigration should be used for the home page URL when migrating from another browser. -->
+<!ENTITY homePageSingleStartMain "about:home">
+<!ENTITY homePageImport "about:home">
+<!ENTITY homePageMigration "about:home">
+
+<!-- LOCALIZATION NOTE (update.downloadAndInstallButton.label, update.downloadAndInstallButton.accesskey):
+ The download and install button in the update notification. -->
+<!ENTITY update.downloadAndInstallButton.label "Download and Install">
+<!ENTITY update.downloadAndInstallButton.accesskey "D">
+
+<!-- LOCALIZATION NOTE (warningOutdatedVersion.goToDownloadPage.label,
+ warningOutdatedVersion.goToDownloadPage.accesskey):
+ Shown in the warning notification bar when the user's version of HenSurf is outdated. -->
+<!ENTITY warningOutdatedVersion.goToDownloadPage.label "Get the latest version">
+<!ENTITY warningOutdatedVersion.goToDownloadPage.accesskey "G">
+
+<!-- LOCALIZATION NOTE (syncTabsMenu3.label): This appears in the history menu -->
+<!ENTITY syncTabsMenu3.label "Synced Tabs">
+<!ENTITY syncTabsMenu3.accesskey "T">
+
+<!-- LOCALIZATION NOTE (syncedTabs.sidebar.label): This appears in the Sidebar -->
+<!ENTITY syncedTabs.sidebar.label "Synced Tabs">
+
+<!-- LOCALIZATION NOTE (syncBrand.fxAccount.label):
+ This is used in the sync preferences panel. -->
+<!ENTITY syncBrand.fxAccount.label "HenSurf Account">
+
+<!-- LOCALIZATION NOTE (syncSetup.description2, syncPrefs.description2):
+ These strings are used in the sync setup and preferences panels. -->
+<!ENTITY syncSetup.description2 "Access your bookmarks, history, passwords and more from all your devices.">
+<!ENTITY syncPrefs.description2 "Access your bookmarks, history, passwords and more from all your devices.">
+
+<!-- LOCALIZATION NOTE (syncBrand.shortName.label):
+ This is used as the title for the sync preferences panel. -->
+<!ENTITY syncBrand.shortName.label "Sync">
+
+<!-- LOCALIZATION NOTE (syncBrand.fullName.label):
+ This is used in various sync-related UI elements. -->
+<!ENTITY syncBrand.fullName.label "HenSurf Sync">
+
+<!-- Application title -->
+<!ENTITY appTitle "HenSurf">
+
+<!-- Window title format -->
+<!ENTITY windowTitleSeparator " - ">
+
+<!-- Bookmarks menu -->
+<!ENTITY bookmarksMenuButton.label "Bookmarks">
+<!ENTITY bookmarksMenuButton.tooltip "Display your bookmarks">
+
+<!-- Help menu -->
+<!ENTITY helpMenu.label "Help">
+<!ENTITY helpMenu.accesskey "H">
+
+<!-- About dialog -->
+<!ENTITY aboutDialog.title "About HenSurf">
+<!ENTITY aboutDialog.version "Version">
+<!ENTITY aboutDialog.copyright "Copyright">
+<!ENTITY aboutDialog.license "License">
+
+<!-- Preferences -->
+<!ENTITY preferencesCmd.label "Preferences">
+<!ENTITY preferencesCmd.accesskey "P">
+
+<!-- Default search engine preference -->
+<!ENTITY defaultSearchEngine.label "Default Search Engine">
+<!ENTITY defaultSearchEngine.description "Choose your preferred search engine for the address bar and search box.">
