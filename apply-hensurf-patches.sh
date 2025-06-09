@@ -173,6 +173,12 @@ try:
 except Exception as e:
     print(f"⚠️ Could not update search config: {e}")
 PYTHON_SCRIPT
+    if [ $? -eq 0 ]; then
+        echo "✅ Backup file for search-config-v2.json removed."
+        rm "$FIREFOX_SRC/services/settings/dumps/main/search-config-v2.json.backup"
+    else
+        echo "⚠️ Python script failed, backup file not removed."
+    fi
 fi
 
 # 7. Create custom theme
