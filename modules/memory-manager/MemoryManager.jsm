@@ -77,8 +77,6 @@ var MemoryManager = {
    */
   _checkMemoryUsage() {
     if (this._isCheckingMemory) {
-      console.log("HenFire: Skipping memory check, already in progress.");
-      return;
     }
     this._isCheckingMemory = true;
     try {
@@ -305,10 +303,6 @@ var MemoryManager = {
     try {
       let tabContextMenu = window.document.getElementById("tabContextMenu");
       if (!tabContextMenu) {
-        // console.warn("HenFire: tabContextMenu not found for window.");
-        return;
-      }
-
       // Create "Restore Suspended Tab" menu item
       let menuItem = window.document.createXULElement("menuitem");
       menuItem.id = "context_restoreHenFireTab";
@@ -444,8 +438,6 @@ var MemoryManager = {
     // Cleanup UI for all open windows
     const windows = Services.wm.getEnumerator("navigator:browser");
     while (windows.hasMoreElements()) {
-      const window = windows.getNext();
-      try {
         if (window.henFireRestoreTabMenuItem && window.henFireRestoreTabMenuItem.parentNode) {
           window.henFireRestoreTabMenuItem.parentNode.removeChild(window.henFireRestoreTabMenuItem);
         }
@@ -459,13 +451,11 @@ var MemoryManager = {
         }
         delete window.henFireTabContextMenuListener;
 
-        // Remove TabClose listener
         if (window.gBrowser && window.gBrowser.tabContainer && window.henFireTabCloseListener) {
           window.gBrowser.tabContainer.removeEventListener("TabClose", window.henFireTabCloseListener);
           delete window.henFireTabCloseListener;
         }
       } catch (e) {
-        console.error("HenFire: Error in shutdown while cleaning up window UI for window:", window.location, e);
       }
     }
     

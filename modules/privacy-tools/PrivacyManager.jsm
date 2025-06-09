@@ -123,11 +123,11 @@ var PrivacyManager = {
   _configureDNSOverHTTPS() {
     try {
       // Enable DNS over HTTPS
-      Services.prefs.setIntPref("network.trr.mode", 2); // TRR first
+      // Mode 5: TRR-Only mode. Prevents fallback to system DNS, enhancing privacy.
+      Services.prefs.setIntPref("network.trr.mode", 5);
       Services.prefs.setStringPref("network.trr.uri", "https://mozilla.cloudflare-dns.com/dns-query");
       Services.prefs.setStringPref("network.trr.bootstrapAddress", "1.1.1.1"); // Ensure correct type
       
-      console.log("[HenSurf] DNS over HTTPS configured");
     } catch (e) {
       console.error("[HenSurf] Error in _configureDNSOverHTTPS: Failed to set one or more DNS over HTTPS preferences.", e);
     }
