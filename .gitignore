@@ -1,17 +1,6 @@
-# Ignore build reports
-builds/*.txt
-
-# Ignore log files
-logs/
-
-# Ignore temporary iconset directories (as a safeguard)
+/builds/*.txt
+/logs/
 *.iconset/
-
-# Ignore mozconfig files in submodule
-src/firefox/mozconfig-*
-
-# Ignore backup files in submodule
-src/firefox/**/*.backup
-
-# Ignore object directories in submodule
-src/firefox/obj-*/
+/src/firefox/mozconfig-*
+/src/firefox/services/settings/dumps/main/*.backup
+/src/firefox/obj-*/

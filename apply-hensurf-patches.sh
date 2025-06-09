@@ -138,7 +138,7 @@ if [ -f "$FIREFOX_SRC/services/settings/dumps/main/search-config-v2.json" ]; the
     cp "$FIREFOX_SRC/services/settings/dumps/main/search-config-v2.json" "$FIREFOX_SRC/services/settings/dumps/main/search-config-v2.json.backup"
     
     # Update search config to prioritize DuckDuckGo
-    python3 << 'PYTHON_SCRIPT'
+    if python3 << 'PYTHON_SCRIPT'
 import json
 import sys
 
@@ -170,14 +170,17 @@ try:
         json.dump(config, f, indent=2)
     
     print("✅ DuckDuckGo set as default search engine")
+    sys.exit(0) # Ensure exit code 0 on success
 except Exception as e:
-    print(f"⚠️ Could not update search config: {e}")
+    print(f"⚠️ Could not update search config: {e}", file=sys.stderr) # Print to stderr
+    sys.exit(1) # Ensure non-zero exit code on failure
 PYTHON_SCRIPT
-    if [ $? -eq 0 ]; then
+    then
         echo "✅ Backup file for search-config-v2.json removed."
-        rm "$FIREFOX_SRC/services/settings/dumps/main/search-config-v2.json.backup"
+        rm -f "$FIREFOX_SRC/services/settings/dumps/main/search-config-v2.json.backup"
     else
-        echo "⚠️ Python script failed, backup file not removed."
+        # The python script already prints its own error to stderr
+        echo "⚠️ Python script failed to update search config, backup file not removed."
     fi
 fi
 
