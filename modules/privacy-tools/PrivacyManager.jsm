@@ -66,7 +66,7 @@ var PrivacyManager = {
       try {
         Services.prefs.setBoolPref(pref, false);
       } catch (e) {
-        console.warn(`[HenFire] Could not set pref ${pref}:`, e);
+        console.warn(`[HenFire] Error in _disableTelemetry: Could not set preference ${pref}.`, e);
       }
     });
   },
@@ -77,8 +77,9 @@ var PrivacyManager = {
   _configureTrackingProtection() {
     try {
       // Enable strict tracking protection
-      Services.prefs.setStringPref("privacy.trackingprotection.mode", "always");
+      // Services.prefs.setStringPref("privacy.trackingprotection.mode", "always"); // Deprecated / Not needed with granular settings
       Services.prefs.setBoolPref("privacy.trackingprotection.enabled", true);
+      Services.prefs.setBoolPref("privacy.trackingprotection.pbmode.enabled", true); // Ensure ETP is on in Private Browsing
       Services.prefs.setBoolPref("privacy.trackingprotection.socialtracking.enabled", true);
       Services.prefs.setBoolPref("privacy.trackingprotection.fingerprinting.enabled", true);
       Services.prefs.setBoolPref("privacy.trackingprotection.cryptomining.enabled", true);
@@ -89,7 +90,7 @@ var PrivacyManager = {
       
       console.log("[HenFire] Enhanced tracking protection configured");
     } catch (e) {
-      console.error("[HenFire] Error configuring tracking protection:", e);
+      console.error("[HenFire] Error in _configureTrackingProtection: Failed to set one or more tracking protection preferences.", e);
     }
   },
 
@@ -111,7 +112,7 @@ var PrivacyManager = {
           Services.prefs.setBoolPref(pref, false);
         }
       } catch (e) {
-        console.warn(`[HenFire] Could not set crash pref ${pref}:`, e);
+        console.warn(`[HenFire] Error in _disableCrashReporting: Could not set crash preference ${pref}.`, e);
       }
     });
   },
@@ -122,13 +123,14 @@ var PrivacyManager = {
   _configureDNSOverHTTPS() {
     try {
       // Enable DNS over HTTPS
-      Services.prefs.setIntPref("network.trr.mode", 2); // TRR first
+      // Mode 5: TRR-Only mode. Prevents fallback to system DNS, enhancing privacy.
+      Services.prefs.setIntPref("network.trr.mode", 5);
       Services.prefs.setStringPref("network.trr.uri", "https://mozilla.cloudflare-dns.com/dns-query");
-      Services.prefs.setBoolPref("network.trr.bootstrapAddress", "1.1.1.1");
+      Services.prefs.setStringPref("network.trr.bootstrapAddress", "1.1.1.1"); // Ensure correct type
       
-      console.log("[HenFire] DNS over HTTPS configured");
+      console.log("[HenFire] DNS over HTTPS configured to TRR-Only mode");
     } catch (e) {
-      console.error("[HenFire] Error configuring DNS over HTTPS:", e);
+      console.error("[HenFire] Error in _configureDNSOverHTTPS: Failed to set one or more DNS over HTTPS preferences.", e);
     }
   },
 
