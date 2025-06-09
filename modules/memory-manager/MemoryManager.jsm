@@ -20,6 +20,7 @@ var MemoryManager = {
   _autoGCEnabled: true,
   _monitoringInterval: null,
   _suspendedTabs: new Set(),
+  _isCheckingMemory: false,
 
   /**
    * Initialize the memory manager
@@ -32,6 +33,13 @@ var MemoryManager = {
     this._loadPreferences();
     this._startMonitoring();
     this._setupEventListeners();
+
+    // Setup UI for existing windows
+    const windows = Services.wm.getEnumerator("navigator:browser");
+    while (windows.hasMoreElements()) {
+      const window = windows.getNext();
+      this._setupWindowUI(window);
+    }
     
     this._initialized = true;
     console.log("HenFire Memory Manager initialized");
@@ -46,7 +54,7 @@ var MemoryManager = {
       this._suspendThresholdMB = Services.prefs.getIntPref("henfire.memory.tab_suspend_threshold", 1536);
       this._autoGCEnabled = Services.prefs.getBoolPref("henfire.memory.auto_gc_enabled", true);
     } catch (e) {
-      console.warn("Failed to load memory manager preferences:", e);
+      console.warn("HenFire: Error in _loadPreferences, could not load one or more preferences. Using defaults.", e);
     }
   },
 
@@ -65,14 +73,20 @@ var MemoryManager = {
    */
   _setupEventListeners() {
     // Listen for tab events
-    Services.obs.addObserver(this, "browser-delayed-startup-finished");
     Services.obs.addObserver(this, "quit-application");
+    Services.obs.addObserver(this, "tab-closed");
+    Services.obs.addObserver(this, "domwindowopened");
   },
 
   /**
    * Check current memory usage and take action if needed
    */
   _checkMemoryUsage() {
+    if (this._isCheckingMemory) {
+      console.log("HenFire: Skipping memory check, already in progress.");
+      return;
+    }
+    this._isCheckingMemory = true;
     try {
       const memoryReporter = Cc["@mozilla.org/memory-reporter-manager;1"]
         .getService(Ci.nsIMemoryReporterManager);
@@ -91,7 +105,9 @@ var MemoryManager = {
         this._handleCriticalMemoryUsage(currentMemoryMB);
       }
     } catch (e) {
-      console.error("Error checking memory usage:", e);
+      console.error("HenFire: Error in _checkMemoryUsage:", e);
+    } finally {
+      this._isCheckingMemory = false;
     }
   },
 
@@ -168,7 +184,7 @@ var MemoryManager = {
         }
       }
     } catch (e) {
-      console.error("Error suspending tabs:", e);
+      console.error("HenFire: Error in _suspendInactiveTabs during tab iteration:", e);
     }
   },
 
@@ -196,7 +212,7 @@ var MemoryManager = {
       
       console.log(`HenFire: Suspended tab: ${tabState.title}`);
     } catch (e) {
-      console.error("Error suspending tab:", e);
+      console.error("HenFire: Error in _suspendTab:", e);
     }
   },
 
@@ -223,7 +239,7 @@ var MemoryManager = {
       
       console.log("HenFire: Restored suspended tab");
     } catch (e) {
-      console.error("Error restoring tab:", e);
+      console.error("HenFire: Error in restoreTab:", e);
     }
   },
 
@@ -243,7 +259,7 @@ var MemoryManager = {
         });
       }
     } catch (e) {
-      console.error("Error triggering garbage collection:", e);
+      console.error("HenFire: Error in _triggerGarbageCollection:", e);
     }
   },
 
@@ -269,7 +285,7 @@ var MemoryManager = {
       
       console.log("HenFire: Caches cleared");
     } catch (e) {
-      console.error("Error clearing caches:", e);
+      console.error("HenFire: Error in _clearCaches:", e);
     }
   },
 
@@ -284,7 +300,60 @@ var MemoryManager = {
         console.log("HenFire: Memory usage minimized");
       });
     } catch (e) {
-      console.error("Error minimizing memory usage:", e);
+      console.error("HenFire: Error in _minimizeMemoryUsage:", e);
+    }
+  },
+
+  /**
+   * Setup UI elements for a given browser window
+   */
+  _setupWindowUI(window) {
+    try {
+      let tabContextMenu = window.document.getElementById("tabContextMenu");
+      if (!tabContextMenu) {
+        // console.warn("HenFire: tabContextMenu not found for window.");
+        return;
+      }
+
+      // Create "Restore Suspended Tab" menu item
+      let menuItem = window.document.createXULElement("menuitem");
+      menuItem.id = "context_restoreHenFireTab";
+      menuItem.label = "Restore Suspended Tab";
+      // Ensure 'this' refers to MemoryManager when restoreTab is called
+      menuItem.addEventListener("command", () => this.restoreTab(window.gBrowser.selectedTab));
+      tabContextMenu.appendChild(menuItem);
+
+      // Store for cleanup
+      window.henFireRestoreTabMenuItem = menuItem;
+
+      // Control visibility
+      window.henFireTabContextMenuListener = event => {
+        try {
+          const currentTab = window.gBrowser.selectedTab;
+          // The menuItem might be gone if the context menu is shown during shutdown/cleanup
+          const currentMenuItem = window.document.getElementById("context_restoreHenFireTab");
+          if (currentMenuItem && currentTab) {
+            const isSuspended = currentTab.hasAttribute("henfire-suspended");
+            currentMenuItem.hidden = !isSuspended;
+          }
+        } catch (uiEventError) {
+          console.error("HenFire: Error in tabContextMenu popupshowing listener:", uiEventError);
+        }
+      };
+      tabContextMenu.addEventListener("popupshowing", window.henFireTabContextMenuListener);
+      console.log("HenFire: Added context menu item to a window.");
+    } catch (e) {
+      console.error("HenFire: Error in _setupWindowUI:", e);
+    }
+  },
+
+  /**
+   * Handle a new window being opened
+   */
+  _onWindowOpened(window) {
+    // We are interested in browser windows only
+    if (window.document.documentElement.getAttribute("windowtype") == "navigator:browser") {
+      this._setupWindowUI(window);
     }
   },
 
@@ -304,7 +373,7 @@ var MemoryManager = {
         suspendedTabsCount: this._suspendedTabs.size
       };
     } catch (e) {
-      console.error("Error getting memory stats:", e);
+      console.error("HenFire: Error in getMemoryStats:", e);
       return null;
     }
   },
@@ -314,12 +383,23 @@ var MemoryManager = {
    */
   observe(subject, topic, data) {
     switch (topic) {
-      case "browser-delayed-startup-finished":
-        // Browser is ready, start monitoring
-        break;
       case "quit-application":
         this.shutdown();
         break;
+      case "tab-closed": {
+        const tab = subject;
+        if (this._suspendedTabs.has(tab)) {
+          this._suspendedTabs.delete(tab);
+          delete tab._henFireState;
+          console.log("HenFire: Removed closed tab from suspended list");
+        }
+        break;
+      }
+      case "domwindowopened": {
+        // subject is the window
+        this._onWindowOpened(subject);
+        break;
+      }
     }
   },
 
@@ -332,8 +412,31 @@ var MemoryManager = {
       this._monitoringInterval = null;
     }
     
-    Services.obs.removeObserver(this, "browser-delayed-startup-finished");
     Services.obs.removeObserver(this, "quit-application");
+    Services.obs.removeObserver(this, "tab-closed");
+    Services.obs.removeObserver(this, "domwindowopened");
+
+    // Cleanup UI for all open windows
+    const windows = Services.wm.getEnumerator("navigator:browser");
+    while (windows.hasMoreElements()) {
+      const window = windows.getNext();
+      try {
+        if (window.henFireRestoreTabMenuItem && window.henFireRestoreTabMenuItem.parentNode) {
+          window.henFireRestoreTabMenuItem.parentNode.removeChild(window.henFireRestoreTabMenuItem);
+        }
+        delete window.henFireRestoreTabMenuItem;
+
+        if (window.henFireTabContextMenuListener) {
+          let tabContextMenu = window.document.getElementById("tabContextMenu");
+          if (tabContextMenu) {
+            tabContextMenu.removeEventListener("popupshowing", window.henFireTabContextMenuListener);
+          }
+        }
+        delete window.henFireTabContextMenuListener;
+      } catch (e) {
+        console.error("HenFire: Error in shutdown while cleaning up window UI for window:", window.location, e);
+      }
+    }
     
     this._initialized = false;
     console.log("HenFire Memory Manager shutdown");
