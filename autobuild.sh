@@ -189,6 +189,21 @@ check_prerequisites() {
         print_warning "Low RAM detected ($total_ram MB). Firefox builds work best with 8GB+ RAM."
     fi
     
+    print_debug "Checking for Python Pillow library..."
+    if ! python3 -c "from PIL import Image" &> /dev/null; then
+        print_error "Python Pillow library (PIL) is not installed. This is required for icon conversion."
+        print_error "Please install it using a command like: pip install Pillow"
+        missing_tools+=("Python Pillow (PIL)")
+    else
+        print_debug "Python Pillow library found."
+    fi
+
+    if [ ${#missing_tools[@]} -ne 0 ]; then
+        print_error "Missing required tools: ${missing_tools[*]}"
+        print_error "Please install the missing tools and try again."
+        return 1
+    fi
+
     print_status "Prerequisites check passed!"
 }
 
@@ -349,6 +364,14 @@ ac_add_options --disable-webrtc
 ac_add_options --disable-eme
 ac_add_options --disable-drm
 
+# Additional privacy and feature disabling from HenSurf patches
+ac_add_options --disable-default-browser-agent
+ac_add_options --disable-normandy
+ac_add_options --disable-pocket
+ac_add_options --disable-telemetry
+ac_add_options --disable-data-reporting
+ac_add_options --disable-health-report
+
 # Performance
 ac_add_options --enable-lto
 ac_add_options --enable-rust-simd
@@ -356,11 +379,21 @@ ac_add_options --enable-rust-simd
 # Parallel build
 mk_add_options MOZ_MAKE_FLAGS=\"-j$PARALLEL_JOBS\""
     
+    if [ "$DRY_RUN" = true ] && [ "$VERBOSE" = true ]; then
+        print_debug "--- START DRY RUN MOZCONFIG CONTENT (for $platform) ---"
+        # Print with CYNC (actually CYAN) color, then reset. Ensure NC is properly defined.
+        echo -e "${CYAN}"
+        echo -e "$mozconfig_content"
+        echo -e "${NC}"
+        print_debug "--- END DRY RUN MOZCONFIG CONTENT (for $platform) ---"
+    fi
+
     if [ "$DRY_RUN" = false ]; then
         echo "$mozconfig_content" > "$MOZCONFIG"
         print_debug "Created mozconfig for $platform at: $MOZCONFIG"
     else
-        print_debug "Would create mozconfig for $platform with $BUILD_TYPE configuration"
+        # MOZCONFIG here is the platform specific one e.g. /app/src/firefox/mozconfig-hensurf-linux
+        print_debug "Would create mozconfig for $platform with $BUILD_TYPE configuration at $MOZCONFIG"
     fi
 }
 
