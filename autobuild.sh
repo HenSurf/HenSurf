@@ -191,9 +191,7 @@ check_prerequisites() {
     
     print_debug "Checking for Python Pillow library..."
     if ! python3 -c "from PIL import Image" &> /dev/null; then
-        print_error "Python Pillow library (PIL) is not installed. This is required for icon conversion."
-        print_error "Please install it using a command like: pip install Pillow"
-        missing_tools+=("Python Pillow (PIL)")
+        missing_tools+=("Python Pillow (PIL) - install with: pip3 install Pillow")
     else
         print_debug "Python Pillow library found."
     fi
@@ -381,7 +379,7 @@ mk_add_options MOZ_MAKE_FLAGS=\"-j$PARALLEL_JOBS\""
     
     if [ "$DRY_RUN" = true ] && [ "$VERBOSE" = true ]; then
         print_debug "--- START DRY RUN MOZCONFIG CONTENT (for $platform) ---"
-        # Print with CYNC (actually CYAN) color, then reset. Ensure NC is properly defined.
+        # Print with CYAN color, then reset. Ensure NC is properly defined.
         echo -e "${CYAN}"
         echo -e "$mozconfig_content"
         echo -e "${NC}"
