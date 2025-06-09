@@ -7,7 +7,18 @@ import platform # For OS detection
 import sys # For exit status
 
 def convert_png_to_icns(png_path, icns_path):
-    """Convert PNG to ICNS format for macOS, conditionally runs iconutil."""
+    """
+    Converts a PNG image to macOS ICNS format, generating all required icon sizes.
+    
+    Creates a temporary `.iconset` directory, resizes the PNG into standard macOS icon sizes, and saves them. On macOS, uses `iconutil` to produce the `.icns` file; on other platforms, only the PNG iconset is generated. Cleans up temporary files after processing.
+    
+    Args:
+        png_path: Path to the source PNG image.
+        icns_path: Path where the resulting ICNS file should be saved.
+    
+    Returns:
+        True if iconset PNGs were generated and, if on macOS, the ICNS file was created; False if an error occurred.
+    """
     iconset_dir = icns_path.replace('.icns', '.iconset')
     created_iconset_dir = False  # Flag to track if directory was created
 
@@ -59,7 +70,16 @@ def convert_png_to_icns(png_path, icns_path):
             print(f"Cleaned up {iconset_dir}")
 
 def convert_png_to_ico(png_path, ico_path):
-    """Convert PNG to ICO format for Windows"""
+    """
+    Converts a PNG image to a multi-resolution Windows ICO file.
+    
+    Args:
+        png_path: Path to the source PNG image.
+        ico_path: Destination path for the generated ICO file.
+    
+    Returns:
+        True if the ICO file was created successfully, False otherwise.
+    """
     try:
         img = Image.open(png_path)
         # Create multiple sizes for ICO
@@ -79,7 +99,12 @@ def convert_png_to_ico(png_path, ico_path):
         return False
 
 def update_branding_icons():
-    """Update branding directory with new icons"""
+    """
+    Updates the branding directory with resized PNG, ICNS, and ICO icons generated from a source PNG image.
+    
+    Returns:
+        True if all icon files are created successfully; False if any step fails.
+    """
     png_path = 'HenSurfLogo.png' # Relative path
     branding_dir = 'browser/branding/hensurf' # Relative path
 

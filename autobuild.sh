@@ -113,7 +113,30 @@ detect_platform() {
     fi
 }
 
-# Function to check prerequisites
+# Checks for required tools, disk space, and RAM before starting the build process.
+#
+# Globals:
+#
+# * PROJECT_ROOT: Used to determine available disk space.
+#
+# Outputs:
+#
+# * Prints status, warning, or error messages to STDOUT and STDERR.
+#
+# Returns:
+#
+# * 0 if all prerequisites are met.
+# * 1 if any required tools are missing.
+#
+# Example:
+#
+#   check_prerequisites
+#   if [ $? -ne 0 ]; then
+#       echo "Prerequisite check failed."
+#       exit 1
+#   fi
+# 
+# This function verifies that all necessary tools for the current platform are installed, checks for at least 10GB of free disk space, and warns if system RAM is below 8GB.
 check_prerequisites() {
     print_status "Checking prerequisites..."
     
@@ -227,7 +250,21 @@ apply_customizations() {
     fi
 }
 
-# Function to create platform-specific mozconfig
+# Generates a platform-specific mozconfig file with build options tailored to the selected build type and platform.
+#
+# Arguments:
+#
+# * Platform name (e.g., linux, macos, windows)
+#
+# Outputs:
+#
+# * Writes the generated mozconfig file to the path specified by the MOZCONFIG environment variable, unless in dry-run mode.
+#
+# Example:
+#
+# ```bash
+# create_mozconfig_for_platform linux
+# ```
 create_mozconfig_for_platform() {
     local platform="$1"
     print_status "Creating build configuration for $platform..."
@@ -332,7 +369,20 @@ create_mozconfig() {
     create_mozconfig_for_platform "$TARGET_PLATFORM"
 }
 
-# Function to bootstrap Mozilla build system
+# Bootstraps the Mozilla build system for the HenSurf browser.
+#
+# Initializes the Mozilla build environment by running the bootstrap process in the Firefox source directory, unless already completed or explicitly skipped. In dry-run mode, skips actual execution and prints intended actions.
+#
+# Globals:
+#   SKIP_BOOTSTRAP: If true, skips the bootstrap process.
+#   DRY_RUN: If true, simulates actions without executing them.
+#   FFOX_SRC: Path to the Firefox source directory.
+#
+# Outputs:
+#   Status and debug messages to STDOUT and the build log.
+#
+# Example:
+#   bootstrap_mozilla
 bootstrap_mozilla() {
     if [ "$SKIP_BOOTSTRAP" = true ]; then
         print_status "Skipping Mozilla bootstrap (--skip-bootstrap specified)"
@@ -361,7 +411,17 @@ bootstrap_mozilla() {
     fi
 }
 
-# Function to build for specific platform
+# Builds the HenSurf browser for a specified platform, handling clean builds, logging, and packaging.
+#
+# Arguments:
+#
+# * platform: The target platform to build for (e.g., linux, macos, windows).
+#
+# Returns:
+#
+# * 0 on successful build and packaging, 1 if the build fails.
+#
+# The function creates a platform-specific mozconfig, optionally cleans previous build artifacts, runs the build process with logging, and packages the resulting build. In dry-run mode, it skips actual build and packaging steps, printing debug messages instead.
 build_for_platform() {
     local platform="$1"
     local original_mozconfig="$MOZCONFIG"
@@ -451,7 +511,25 @@ build_hensurf() {
     fi
 }
 
-# Function to package build for specific platform
+# Packages HenSurf build artifacts for a specified platform.
+#
+# Packages the build output for the given platform by running the Mozilla packaging process,
+# organizing the resulting artifacts into versioned and "latest" directories, and generating
+# a build information file with metadata. In dry-run mode, skips actual packaging and copying.
+#
+# Arguments:
+#
+# * Platform name (e.g., "linux", "macos", "windows")
+#
+# Outputs:
+#
+# * Packaged build artifacts and a build-info.txt file in the build directory structure.
+#
+# Example:
+#
+# ```bash
+# package_build_for_platform linux
+# ```
 package_build_for_platform() {
     local platform="$1"
     print_status "Packaging HenSurf for $platform..."
@@ -535,7 +613,22 @@ package_build() {
     fi
 }
 
-# Function to run tests (optional)
+# Runs a minimal test suite if the build type is debug.
+#
+# Only executes tests when in debug mode. Skips test execution in dry-run mode or if the Firefox source directory does not exist.
+#
+# Globals:
+# * BUILD_TYPE: Determines if tests should run (must be "debug").
+# * DRY_RUN: If true, skips actual test execution.
+# * FFOX_SRC: Path to the Firefox source directory.
+#
+# Outputs:
+# * Status and debug messages to STDOUT.
+# * Warnings if tests fail.
+#
+# Example:
+#
+#   run_tests
 run_tests() {
     if [ "$BUILD_TYPE" = "debug" ]; then
         print_status "Running basic tests..."
@@ -671,7 +764,20 @@ if [ "$TARGET_PLATFORM" = "auto" ]; then
     TARGET_PLATFORM=$(detect_platform)
 fi
 
-# Main execution
+# Orchestrates the full HenSurf browser build process, including setup, customization, building, testing, packaging, and reporting.
+#
+# Executes all major build steps in sequence, printing status updates and handling both normal and dry-run modes. Reports build artifact and log locations upon completion.
+#
+# Globals:
+#   Uses and modifies global configuration variables such as BUILD_TYPE, TARGET_PLATFORM, PARALLEL_JOBS, CLEAN_BUILD, DRY_RUN, BUILD_DIR, LOG_DIR, and VERSION.
+#
+# Outputs:
+#   Prints status, warnings, and completion messages to STDOUT. Writes logs and reports to the build log directory.
+#
+# Example:
+#
+#   main
+#   # Runs the entire automated build process for HenSurf with current configuration.
 main() {
     print_header "HenSurf Autobuild v$VERSION"
     
