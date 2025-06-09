@@ -1,0 +1,35 @@
+[0;32m[INFO][0m Build configuration:
+[0;32m[INFO][0m   Build Type: release
+[0;32m[INFO][0m   Target Platform: linux
+[0;32m[INFO][0m   Parallel Jobs: 4
+[0;32m[INFO][0m   Clean Build: false
+[0;32m[INFO][0m   Dry Run: true
+[0;32m[INFO][0m   Builds Directory: /app/builds
+[1;33m[WARN][0m DRY RUN MODE - No actual changes will be made
+[0;32m[INFO][0m Checking prerequisites...
+[1;33m[WARN][0m Low disk space detected. Firefox builds require at least 10GB free space.
+[1;33m[WARN][0m Low RAM detected (7959 MB). Firefox builds work best with 8GB+ RAM.
+[0;32m[INFO][0m Prerequisites check passed!
+[0;32m[INFO][0m Setting up build environment...
+[0;32m[INFO][0m Initializing Firefox source...
+[0;36m[DEBUG][0m Would run: git submodule update --init --recursive
+[0;36m[DEBUG][0m MOZ_OBJDIR: /app/src/firefox/obj-hensurf
+[0;36m[DEBUG][0m MOZCONFIG: /app/src/firefox/mozconfig-hensurf
+[0;32m[INFO][0m Applying HenSurf customizations...
+[0;32m[INFO][0m Converting logo to various formats...
+[0;36m[DEBUG][0m Would run: python3 convert-icons.py
+[0;32m[INFO][0m Applying HenSurf patches...
+[0;36m[DEBUG][0m Would run: bash apply-hensurf-patches.sh
+[0;32m[INFO][0m Bootstrapping Mozilla build system...
+[0;36m[DEBUG][0m DRY RUN: Would change to /app/src/firefox, but it doesn't exist (submodules not initialized in dry run).
+[0;36m[DEBUG][0m DRY RUN: Skipping ./mach bootstrap steps.
+[0;32m[INFO][0m Building HenSurf for linux...
+[0;32m[INFO][0m Creating build configuration for linux...
+[0;36m[DEBUG][0m Would create mozconfig for linux with release configuration
+[0;36m[DEBUG][0m DRY RUN: Would change to /app/src/firefox for linux build, but it doesn't exist.
+[0;36m[DEBUG][0m DRY RUN: Skipping ./mach clobber and ./mach build steps for linux.
+[0;32m[INFO][0m Build report saved to: /app/builds/build_report_20250609_160507.txt
+[0;32m[INFO][0m HenSurf release build completed successfully!
+[0;32m[INFO][0m Build artifacts are available in: /app/builds/linux/release/1.0.0-20250609/
+[0;32m[INFO][0m Latest build also available in: /app/builds/linux/release/latest/
+[0;32m[INFO][0m Build logs: /app/logs

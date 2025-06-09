@@ -129,7 +129,7 @@ check_prerequisites() {
             required_tools+=("gcc" "make")
             ;;
         "windows")
-            required_tools+=("cl.exe")
+            required_tools+=("x86_64-w64-mingw32-gcc")
             ;;
     esac
     
@@ -287,7 +287,8 @@ ac_add_options --with-system-bz2"
 # macOS-specific options
 ac_add_options --target=x86_64-apple-darwin
 ac_add_options --enable-official-branding
-ac_add_options --with-macos-sdk=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+local macos_sdk_path=\$(xcrun --sdk macosx --show-sdk-path 2>/dev/null || echo "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
+ac_add_options --with-macos-sdk=\${macos_sdk_path}"
             ;;
         "windows")
             mozconfig_content+="
@@ -340,6 +341,11 @@ bootstrap_mozilla() {
     
     print_status "Bootstrapping Mozilla build system..."
     
+    if [ "$DRY_RUN" = true ] && [ ! -d "$FFOX_SRC" ]; then
+        print_debug "DRY RUN: Would change to $FFOX_SRC, but it doesn't exist (submodules not initialized in dry run)."
+        print_debug "DRY RUN: Skipping ./mach bootstrap steps."
+        return 0
+    fi
     cd "$FFOX_SRC"
     
     if [ ! -f ".mach_bootstrap_complete" ]; then
@@ -366,6 +372,11 @@ build_for_platform() {
     MOZCONFIG="$FFOX_SRC/mozconfig-hensurf-$platform"
     create_mozconfig_for_platform "$platform"
     
+    if [ "$DRY_RUN" = true ] && [ ! -d "$FFOX_SRC" ]; then
+        print_debug "DRY RUN: Would change to $FFOX_SRC for $platform build, but it doesn't exist."
+        print_debug "DRY RUN: Skipping ./mach clobber and ./mach build steps for $platform."
+        return 0 # Skip build and subsequent packaging for this platform in dry run
+    fi
     cd "$FFOX_SRC"
     
     # Set platform-specific object directory
@@ -376,7 +387,7 @@ build_for_platform() {
         print_status "Cleaning previous build for $platform..."
         if [ "$DRY_RUN" = false ]; then
             ./mach clobber || true
-            rm -rf "$MOZ_OBJDIR" || true
+            rm -rf "$MOZ_OBJDIR"
         else
             print_debug "Would run: ./mach clobber && rm -rf $MOZ_OBJDIR"
         fi
@@ -389,9 +400,9 @@ build_for_platform() {
     if [ "$DRY_RUN" = false ]; then
         local platform_log="$LOG_DIR/autobuild_${platform}_$DATE.log"
         if [ "$VERBOSE" = true ]; then
-            ./mach build 2>&1 | tee -a "$platform_log"
+            ./mach build 2>&1 | tee "$platform_log"
         else
-            ./mach build >> "$platform_log" 2>&1
+            ./mach build > "$platform_log" 2>&1
         fi
         
         local build_exit_code=$?
@@ -445,6 +456,11 @@ package_build_for_platform() {
     local platform="$1"
     print_status "Packaging HenSurf for $platform..."
     
+    if [ "$DRY_RUN" = true ] && [ ! -d "$FFOX_SRC" ]; then
+        print_debug "DRY RUN: Would change to $FFOX_SRC for packaging $platform, but it doesn't exist."
+        print_debug "DRY RUN: Skipping ./mach package and artifact copying for $platform."
+        return 0
+    fi
     cd "$FFOX_SRC"
     
     if [ "$DRY_RUN" = false ]; then
@@ -524,6 +540,11 @@ run_tests() {
     if [ "$BUILD_TYPE" = "debug" ]; then
         print_status "Running basic tests..."
         
+        if [ "$DRY_RUN" = true ] && [ ! -d "$FFOX_SRC" ]; then
+            print_debug "DRY RUN: Would change to $FFOX_SRC for running tests, but it doesn't exist."
+            print_debug "DRY RUN: Skipping ./mach test."
+            return 0
+        fi
         cd "$FFOX_SRC"
         
         if [ "$DRY_RUN" = false ]; then
@@ -670,10 +691,8 @@ main() {
     check_prerequisites
     setup_environment
     apply_customizations
-    create_mozconfig
     bootstrap_mozilla
     build_hensurf
-    package_build
     run_tests
     generate_report
     
