@@ -77,7 +77,6 @@ var MemoryManager = {
    */
   _checkMemoryUsage() {
     if (this._isCheckingMemory) {
-      return; // Silently skip if already checking
     }
     this._isCheckingMemory = true;
     try {
@@ -304,15 +303,6 @@ var MemoryManager = {
     try {
       let tabContextMenu = window.document.getElementById("tabContextMenu");
       if (!tabContextMenu) {
-        console.error("HenFire: Error in _setupWindowUI: tabContextMenu not found for window:", window.location.href);
-        return;
-      }
-
-      if (tabContextMenu.querySelector("#context_restoreHenFireTab")) {
-        // console.log("HenFire: Context menu item #context_restoreHenFireTab already exists in window:", window.location.href, ". Skipping setup.");
-        return; // Already initialized for this window
-      }
-
       // Create "Restore Suspended Tab" menu item
       let menuItem = window.document.createXULElement("menuitem");
       menuItem.id = "context_restoreHenFireTab";
@@ -358,36 +348,6 @@ var MemoryManager = {
         };
         tabContainer.addEventListener("TabClose", window.henFireTabCloseListener);
       }
-
-      // Add unload listener for comprehensive cleanup on window close
-      let unloadCleanupHandler = () => {
-        try {
-          // Remove popupshowing listener
-          if (window.henFireTabContextMenuListener && window.document) { // Check window.document as window might be partially destroyed
-            let tabContextMenu = window.document.getElementById("tabContextMenu");
-            if (tabContextMenu) {
-              tabContextMenu.removeEventListener("popupshowing", window.henFireTabContextMenuListener);
-            }
-          }
-
-          // Remove TabClose listener
-          if (window.henFireTabCloseListener && window.gBrowser && window.gBrowser.tabContainer) {
-            window.gBrowser.tabContainer.removeEventListener("TabClose", window.henFireTabCloseListener);
-          }
-
-          // Clean up stored properties on the window object
-          if (window.henFireTabContextMenuListener) delete window.henFireTabContextMenuListener;
-          if (window.henFireTabCloseListener) delete window.henFireTabCloseListener;
-          if (window.henFireRestoreTabMenuItem) delete window.henFireRestoreTabMenuItem; // The item itself is removed by browser on unload.
-          if (window.henFireUnloadListener) delete window.henFireUnloadListener;
-
-        } catch (e) {
-          console.error("HenFire: Error during window unload cleanup:", e);
-        }
-      };
-      window.addEventListener("unload", unloadCleanupHandler, { once: true });
-      window.henFireUnloadListener = unloadCleanupHandler;
-
     } catch (e) {
       console.error("HenFire: Error in _setupWindowUI:", e);
     }
@@ -478,20 +438,6 @@ var MemoryManager = {
     // Cleanup UI for all open windows
     const windows = Services.wm.getEnumerator("navigator:browser");
     while (windows.hasMoreElements()) {
-      let window = null;
-      try {
-        window = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
-        if (!window || window.closed) {
-          continue;
-        }
-
-        // First, remove the unload listener if it exists, to prevent it from running during this manual cleanup
-        if (window.henFireUnloadListener) {
-          window.removeEventListener("unload", window.henFireUnloadListener);
-          delete window.henFireUnloadListener;
-        }
-
-        // Then, proceed with other cleanup as before
         if (window.henFireRestoreTabMenuItem && window.henFireRestoreTabMenuItem.parentNode) {
           window.henFireRestoreTabMenuItem.parentNode.removeChild(window.henFireRestoreTabMenuItem);
         }
@@ -510,7 +456,6 @@ var MemoryManager = {
           delete window.henFireTabCloseListener;
         }
       } catch (e) {
-        console.error("HenFire: Error in shutdown while cleaning up window UI for window:", window ? window.location.href : "(unknown window)", e);
       }
     }
     
