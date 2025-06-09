@@ -33,13 +33,7 @@ var MemoryManager = {
     this._loadPreferences();
     this._startMonitoring();
     this._setupEventListeners();
-
-    // Setup UI for existing windows
-    const windows = Services.wm.getEnumerator("navigator:browser");
-    while (windows.hasMoreElements()) {
-      const window = windows.getNext();
-      this._setupWindowUI(window);
-    }
+    // UI setup is now deferred to final-ui-startup
     
     this._initialized = true;
     console.log("HenFire Memory Manager initialized");
@@ -74,8 +68,8 @@ var MemoryManager = {
   _setupEventListeners() {
     // Listen for tab events
     Services.obs.addObserver(this, "quit-application");
-    Services.obs.addObserver(this, "tab-closed");
-    Services.obs.addObserver(this, "domwindowopened");
+    // Services.obs.addObserver(this, "domwindowopened"); // Will be added after initial UI setup
+    Services.obs.addObserver(this, "final-ui-startup");
   },
 
   /**
@@ -342,6 +336,24 @@ var MemoryManager = {
       };
       tabContextMenu.addEventListener("popupshowing", window.henFireTabContextMenuListener);
       console.log("HenFire: Added context menu item to a window.");
+
+      // Add TabClose listener for _henFireState cleanup
+      if (window.gBrowser && window.gBrowser.tabContainer) {
+        let tabContainer = window.gBrowser.tabContainer;
+        window.henFireTabCloseListener = event => {
+          try {
+            let tab = event.target;
+            if (tab && this._suspendedTabs.has(tab)) {
+              this._suspendedTabs.delete(tab);
+              delete tab._henFireState;
+              console.log("HenFire: Cleaned up _henFireState for closed suspended tab:", tab.label);
+            }
+          } catch (tabCloseError) {
+            console.error("HenFire: Error in TabClose listener:", tabCloseError);
+          }
+        };
+        tabContainer.addEventListener("TabClose", window.henFireTabCloseListener);
+      }
     } catch (e) {
       console.error("HenFire: Error in _setupWindowUI:", e);
     }
@@ -350,12 +362,7 @@ var MemoryManager = {
   /**
    * Handle a new window being opened
    */
-  _onWindowOpened(window) {
-    // We are interested in browser windows only
-    if (window.document.documentElement.getAttribute("windowtype") == "navigator:browser") {
-      this._setupWindowUI(window);
-    }
-  },
+  // _onWindowOpened method is removed as its logic is integrated into observe for domwindowopened.
 
   /**
    * Get current memory statistics
@@ -386,18 +393,36 @@ var MemoryManager = {
       case "quit-application":
         this.shutdown();
         break;
-      case "tab-closed": {
-        const tab = subject;
-        if (this._suspendedTabs.has(tab)) {
-          this._suspendedTabs.delete(tab);
-          delete tab._henFireState;
-          console.log("HenFire: Removed closed tab from suspended list");
+      // Removed tab-closed case
+      case "final-ui-startup": {
+        console.log("HenFire: Received final-ui-startup. Setting up UI for existing windows.");
+        const windows = Services.wm.getEnumerator("navigator:browser");
+        while (windows.hasMoreElements()) {
+          const window = windows.getNext();
+          try {
+            let domWin = window.QueryInterface(Ci.nsIDOMWindow);
+            this._setupWindowUI(domWin);
+          } catch (e) {
+            console.error("HenFire: Error setting up UI for an existing window during final-ui-startup:", e);
+          }
         }
+        // Now that initial windows are handled, listen for newly opened windows.
+        Services.obs.addObserver(this, "domwindowopened");
         break;
       }
       case "domwindowopened": {
-        // subject is the window
-        this._onWindowOpened(subject);
+        try {
+          let openedWindow = subject.QueryInterface(Ci.nsIDOMWindow);
+          if (openedWindow.document.documentElement.getAttribute("windowtype") == "navigator:browser") {
+            // Add a load event listener to ensure the window's UI is ready
+            openedWindow.addEventListener("load", () => {
+              // 'this' inside arrow function will be MemoryManager
+              this._setupWindowUI(openedWindow);
+            }, { once: true });
+          }
+        } catch (e) {
+          console.error("HenFire: Error in domwindowopened handler:", e);
+        }
         break;
       }
     }
@@ -413,8 +438,8 @@ var MemoryManager = {
     }
     
     Services.obs.removeObserver(this, "quit-application");
-    Services.obs.removeObserver(this, "tab-closed");
-    Services.obs.removeObserver(this, "domwindowopened");
+    Services.obs.removeObserver(this, "final-ui-startup");
+    Services.obs.removeObserver(this, "domwindowopened"); // Ensure this is removed if it was added
 
     // Cleanup UI for all open windows
     const windows = Services.wm.getEnumerator("navigator:browser");
@@ -433,6 +458,12 @@ var MemoryManager = {
           }
         }
         delete window.henFireTabContextMenuListener;
+
+        // Remove TabClose listener
+        if (window.gBrowser && window.gBrowser.tabContainer && window.henFireTabCloseListener) {
+          window.gBrowser.tabContainer.removeEventListener("TabClose", window.henFireTabCloseListener);
+          delete window.henFireTabCloseListener;
+        }
       } catch (e) {
         console.error("HenFire: Error in shutdown while cleaning up window UI for window:", window.location, e);
       }
