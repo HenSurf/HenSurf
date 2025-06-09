@@ -24,7 +24,7 @@ var PrivacyManager = {
       return;
     }
 
-    console.log("[HenFire] Initializing Privacy Manager...");
+    console.log("[HenSurf] Initializing Privacy Manager...");
 
     // Disable telemetry
     this._disableTelemetry();
@@ -39,7 +39,7 @@ var PrivacyManager = {
     this._configureDNSOverHTTPS();
 
     this._initialized = true;
-    console.log("[HenFire] Privacy Manager initialized successfully");
+    console.log("[HenSurf] Privacy Manager initialized successfully");
   },
 
   /**
@@ -66,7 +66,7 @@ var PrivacyManager = {
       try {
         Services.prefs.setBoolPref(pref, false);
       } catch (e) {
-        console.warn(`[HenFire] Error in _disableTelemetry: Could not set preference ${pref}.`, e);
+        console.warn(`[HenSurf] Error in _disableTelemetry: Could not set preference ${pref}.`, e);
       }
     });
   },
@@ -88,9 +88,9 @@ var PrivacyManager = {
       Services.prefs.setIntPref("network.cookie.cookieBehavior", 5); // Total Cookie Protection
       Services.prefs.setBoolPref("privacy.firstparty.isolate", true);
       
-      console.log("[HenFire] Enhanced tracking protection configured");
-    } catch (e) {
-      console.error("[HenFire] Error in _configureTrackingProtection: Failed to set one or more tracking protection preferences.", e);
+      console.log("[HenSurf] Enhanced tracking protection configured");
+    } catch (e)
+      console.error("[HenSurf] Error in _configureTrackingProtection: Failed to set one or more tracking protection preferences.", e);
     }
   },
 
@@ -112,7 +112,7 @@ var PrivacyManager = {
           Services.prefs.setBoolPref(pref, false);
         }
       } catch (e) {
-        console.warn(`[HenFire] Error in _disableCrashReporting: Could not set crash preference ${pref}.`, e);
+        console.warn(`[HenSurf] Error in _disableCrashReporting: Could not set crash preference ${pref}.`, e);
       }
     });
   },
@@ -128,9 +128,8 @@ var PrivacyManager = {
       Services.prefs.setStringPref("network.trr.uri", "https://mozilla.cloudflare-dns.com/dns-query");
       Services.prefs.setStringPref("network.trr.bootstrapAddress", "1.1.1.1"); // Ensure correct type
       
-      console.log("[HenFire] DNS over HTTPS configured to TRR-Only mode");
     } catch (e) {
-      console.error("[HenFire] Error in _configureDNSOverHTTPS: Failed to set one or more DNS over HTTPS preferences.", e);
+      console.error("[HenSurf] Error in _configureDNSOverHTTPS: Failed to set one or more DNS over HTTPS preferences.", e);
     }
   },
 
@@ -154,7 +153,7 @@ var PrivacyManager = {
       return;
     }
 
-    console.log("[HenFire] Privacy Manager shutting down...");
+    console.log("[HenSurf] Privacy Manager shutting down...");
     this._initialized = false;
   }
 };

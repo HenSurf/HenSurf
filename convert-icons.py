@@ -3,13 +3,29 @@
 import os
 from PIL import Image
 import subprocess
+import platform # For OS detection
+import sys # For exit status
 
 def convert_png_to_icns(png_path, icns_path):
-    """Convert PNG to ICNS format for macOS"""
+    """
+    Converts a PNG image to macOS ICNS format, generating all required icon sizes.
+    
+    Creates a temporary `.iconset` directory, resizes the PNG into standard macOS icon sizes, and saves them. On macOS, uses `iconutil` to produce the `.icns` file; on other platforms, only the PNG iconset is generated. Cleans up temporary files after processing.
+    
+    Args:
+        png_path: Path to the source PNG image.
+        icns_path: Path where the resulting ICNS file should be saved.
+    
+    Returns:
+        True if iconset PNGs were generated and, if on macOS, the ICNS file was created; False if an error occurred.
+    """
+    iconset_dir = icns_path.replace('.icns', '.iconset')
+    created_iconset_dir = False  # Flag to track if directory was created
+
     try:
         # Create iconset directory
-        iconset_dir = icns_path.replace('.icns', '.iconset')
         os.makedirs(iconset_dir, exist_ok=True)
+        created_iconset_dir = True
         
         # Load the original image
         img = Image.open(png_path)
@@ -34,21 +50,36 @@ def convert_png_to_icns(png_path, icns_path):
             resized_img.save(os.path.join(iconset_dir, filename))
             print(f"Generated {filename} ({size}x{size})")
         
-        # Convert iconset to icns using iconutil
-        subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', icns_path], check=True)
-        print(f"Created {icns_path}")
+        if platform.system() == 'Darwin':
+            # Convert iconset to icns using iconutil
+            subprocess.run(['iconutil', '-c', 'icns', iconset_dir, '-o', icns_path], check=True)
+            print(f"Created {icns_path}")
+        else:
+            print(f"Skipping ICNS generation for {icns_path} (iconutil requires macOS).")
+            # Still considered a success if PNGs were generated
         
-        # Clean up iconset directory
-        import shutil
-        shutil.rmtree(iconset_dir)
+        return True # PNGs generated, and iconutil (if run) succeeded or was skipped
         
-        return True
     except Exception as e:
-        print(f"Error converting to ICNS: {e}")
-        return False
+        print(f"Error during ICNS preparation or generation: {e}")
+        return False # Error in creating .iconset or PNGs within it
+    finally:
+        if created_iconset_dir:
+            import shutil
+            shutil.rmtree(iconset_dir)
+            print(f"Cleaned up {iconset_dir}")
 
 def convert_png_to_ico(png_path, ico_path):
-    """Convert PNG to ICO format for Windows"""
+    """
+    Converts a PNG image to a multi-resolution Windows ICO file.
+    
+    Args:
+        png_path: Path to the source PNG image.
+        ico_path: Destination path for the generated ICO file.
+    
+    Returns:
+        True if the ICO file was created successfully, False otherwise.
+    """
     try:
         img = Image.open(png_path)
         # Create multiple sizes for ICO
@@ -68,37 +99,66 @@ def convert_png_to_ico(png_path, ico_path):
         return False
 
 def update_branding_icons():
-    """Update branding directory with new icons"""
-    png_path = '/Users/henryperzinski/Developer/HenFire/HenSurfLogo.png'
-    branding_dir = '/Users/henryperzinski/Developer/HenFire/browser/branding/hensurf'
+    """
+    Updates the branding directory with resized PNG, ICNS, and ICO icons generated from a source PNG image.
+    
+    Returns:
+        True if all icon files are created successfully; False if any step fails.
+    """
+    png_path = 'HenSurfLogo.png' # Relative path
+    branding_dir = 'browser/branding/hensurf' # Relative path
+
+    # Ensure branding directory exists
+    os.makedirs(branding_dir, exist_ok=True)
     
     if not os.path.exists(png_path):
-        print(f"Error: {png_path} not found")
+        print(f"Error: {png_path} not found in {os.getcwd()}")
         return False
     
     # Load original image
-    img = Image.open(png_path)
+    try:
+        img = Image.open(png_path)
+    except Exception as e:
+        print(f"Error opening source image {png_path}: {e}")
+        return False
     
     # Create 16x16 and 32x32 SVG-style icons (actually PNG for now)
     sizes = [16, 32, 48, 64, 128, 256]
     
-    for size in sizes:
-        resized_img = img.resize((size, size), Image.Resampling.LANCZOS)
-        output_path = os.path.join(branding_dir, f'default{size}.png')
-        resized_img.save(output_path)
-        print(f"Created {output_path}")
+    try:
+        for size in sizes:
+            resized_img = img.resize((size, size), Image.Resampling.LANCZOS)
+            output_path = os.path.join(branding_dir, f'default{size}.png')
+            resized_img.save(output_path)
+            print(f"Created {output_path}")
+    except Exception as e:
+        print(f"Error generating PNG files: {e}")
+        return False
     
     # Create macOS app icon
     icns_path = os.path.join(branding_dir, 'hensurf.icns')
-    convert_png_to_icns(png_path, icns_path)
-    
+    if not convert_png_to_icns(png_path, icns_path):
+        # This function now returns True even if iconutil is skipped,
+        # so False here means a more critical error in PNG generation for ICNS.
+        print(f"Failed to create or prepare ICNS resources from {png_path}")
+        # Depending on strictness, you might return False here.
+        # For now, we'll let it continue if base PNGs were made,
+        # as per "not necessarily return False if only the optional ICNS step prints a 'skipped' message".
+        # However, if convert_png_to_icns returns False, it means PNGs for iconset failed.
+        return False
+
+
     # Create Windows icon
     ico_path = os.path.join(branding_dir, 'hensurf.ico')
-    convert_png_to_ico(png_path, ico_path)
+    if not convert_png_to_ico(png_path, ico_path):
+        print(f"Failed to create ICO {ico_path} from {png_path}")
+        return False # ICO generation is generally expected to work if Pillow is present
     
     return True
 
 if __name__ == '__main__':
     print("Converting HenSurf logo to various icon formats...")
-    update_branding_icons()
+    if not update_branding_icons():
+        print("Icon conversion failed.")
+        sys.exit(1)
     print("Icon conversion completed!")
