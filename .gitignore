@@ -1,0 +1,6 @@
+/builds/*.txt
+/logs/
+*.iconset/
+/src/firefox/mozconfig-*
+/src/firefox/services/settings/dumps/main/*.backup
+/src/firefox/obj-*/
