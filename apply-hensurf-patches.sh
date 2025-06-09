@@ -38,29 +38,7 @@ fi
 
 # 3. Update mozconfig for HenSurf branding
 echo "⚙️ Updating build configuration..."
-cat >> "$FIREFOX_SRC/mozconfig" << 'EOF'
-
-# HenSurf Branding Configuration
-ac_add_options --with-branding=browser/branding/hensurf
-ac_add_options --enable-official-branding
-
-# Privacy and Security
-ac_add_options --disable-crashreporter
-ac_add_options --disable-updater
-ac_add_options --disable-maintenance-service
-ac_add_options --disable-default-browser-agent
-
-# Remove sponsored content and telemetry
-ac_add_options --disable-normandy
-ac_add_options --disable-pocket
-ac_add_options --disable-telemetry
-ac_add_options --disable-data-reporting
-ac_add_options --disable-health-report
-
-# Performance optimizations
-ac_add_options --enable-lto
-ac_add_options --enable-rust-simd
-EOF
+# The mozconfig options are now handled by autobuild.sh
 
 # 4. Create custom preferences file
 echo "🔧 Setting up custom preferences..."
@@ -143,12 +121,15 @@ EOF
 
 # 5. Remove Pocket components
 echo "🚫 Removing Pocket integration..."
-find "$FIREFOX_SRC" -name "*pocket*" -type f -delete 2>/dev/null || true
-find "$FIREFOX_SRC" -name "*Pocket*" -type f -delete 2>/dev/null || true
+# Allow find to report if it encounters errors other than not finding files
+# Exit status of find is 0 if it successfully searches, even if no files are found.
+find "$FIREFOX_SRC" -name "*pocket*" -type f -delete
+find "$FIREFOX_SRC" -name "*Pocket*" -type f -delete
 
-# Remove Pocket directories
-rm -rf "$FIREFOX_SRC/browser/components/pocket" 2>/dev/null || true
-rm -rf "$FIREFOX_SRC/browser/extensions/pocket" 2>/dev/null || true
+# Remove Pocket directories. rm -rf will not error if directories don't exist.
+# Errors will only show for issues like permission problems.
+rm -rf "$FIREFOX_SRC/browser/components/pocket"
+rm -rf "$FIREFOX_SRC/browser/extensions/pocket"
 
 # 6. Update search configuration to prioritize DuckDuckGo
 echo "🔍 Setting DuckDuckGo as default search engine..."
@@ -196,13 +177,18 @@ fi
 
 # 7. Create custom theme
 echo "🎨 Installing HenSurf custom theme..."
-mkdir -p "$FIREFOX_SRC/browser/themes/hensurf"
-cat > "$FIREFOX_SRC/browser/themes/hensurf/manifest.json" << 'EOF'
+mkdir -p "$FIREFOX_SRC/browser/branding/hensurf/extensions/hensurf-theme@hensurf.org"
+cat > "$FIREFOX_SRC/browser/branding/hensurf/extensions/hensurf-theme@hensurf.org/manifest.json" << 'EOF'
 {
   "manifest_version": 2,
   "name": "HenSurf Theme",
   "version": "1.0",
   "description": "Official HenSurf Browser Theme",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "hensurf-theme@hensurf.org"
+    }
+  },
   "theme": {
     "colors": {
       "toolbar": "#0078D4",
@@ -235,54 +221,7 @@ cat > "$FIREFOX_SRC/browser/themes/hensurf/manifest.json" << 'EOF'
 }
 EOF
 
-# 8. Create build script for all platforms
-echo "🔨 Creating multi-platform build script..."
-cat > "build-hensurf.sh" << 'EOF'
-#!/bin/bash
-
-# HenSurf Multi-Platform Build Script
-
-set -e
-
-echo "🏄 Building HenSurf Browser for all platforms..."
-
-cd src/firefox
-
-# Clean previous builds
-./mach clobber
-
-echo "🔨 Building HenSurf..."
-./mach build
-
-echo "📦 Creating packages..."
-
-# Create different package formats based on platform
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "🍎 Creating macOS package..."
-    ./mach package
-    ./mach dmg
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    echo "🐧 Creating Linux packages..."
-    ./mach package
-    # Create AppImage if available
-    if command -v appimagetool &> /dev/null; then
-        echo "📱 Creating AppImage..."
-        ./mach appimage
-    fi
-elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
-    echo "🪟 Creating Windows package..."
-    ./mach package
-    ./mach installer
-else
-    echo "📦 Creating generic package..."
-    ./mach package
-fi
-
-echo "✅ HenSurf build completed!"
-echo "📁 Build artifacts are in: obj-*/dist/"
-EOF
-
-chmod +x build-hensurf.sh
+# 8. build-hensurf.sh is removed, autobuild.sh is now the main build script.
 
 # 9. Update README
 echo "📚 Updating documentation..."
@@ -313,28 +252,28 @@ cat > "README-HenSurf.md" << 'EOF'
 
 1. **Clone and Setup**:
    ```bash
-   git clone <repository-url>
-   cd HenFire
-   ./apply-hensurf-patches.sh
+   git clone <repository-url> # Or ensure you are in the project root
+   # The autobuild script will handle patches and bootstrapping.
    ```
 
-2. **Bootstrap Firefox**:
+2. **Build HenSurf (using autobuild)**:
    ```bash
-   cd src/firefox
-   ./mach bootstrap
+   ./autobuild.sh [options]
+   # Example: ./autobuild.sh -c  (for a clean build for your current platform)
+   # Example: ./autobuild.sh -p linux (to build for Linux)
+   # Run ./autobuild.sh --help for all options.
    ```
-
-3. **Build HenSurf**:
-   ```bash
-   cd ../..
-   ./build-hensurf.sh
-   ```
+   The `autobuild.sh` script will typically:
+   - Apply necessary HenSurf customizations (like those in `apply-hensurf-patches.sh`).
+   - Bootstrap Firefox sources if needed.
+   - Build the browser for the specified (or auto-detected) platform.
 
 ### Platform-Specific Builds
-
-- **macOS**: Creates `.dmg` installer
-- **Linux**: Creates `.tar.bz2` package and AppImage (if available)
-- **Windows**: Creates `.exe` installer
+The `autobuild.sh` script handles platform-specific builds and packaging.
+Refer to `autobuild.sh --help` for more details.
+- **macOS**: Creates `.dmg` installer and `.app` bundle.
+- **Linux**: Creates `.tar.bz2` package and potentially AppImage.
+- **Windows**: Creates `.exe` installer.
 
 ## Configuration
 
@@ -380,9 +319,13 @@ EOF
 echo "✅ HenSurf customization completed!"
 echo ""
 echo "🏄 Next steps:"
-echo "1. Run: cd src/firefox && ./mach bootstrap (if not done already)"
-echo "2. Run: ./build-hensurf.sh"
-echo "3. Your HenSurf browser will be built with:"
+echo "To build the browser, run the main autobuild script:"
+echo "   ./autobuild.sh"
+echo "For example, for a clean build for your current platform:"
+echo "   ./autobuild.sh -c"
+echo "Run ./autobuild.sh --help for more options."
+echo ""
+echo "The autobuild script will handle bootstrapping, applying patches, and building HenSurf with:"
 echo "   - HenSurf branding and logos"
 echo "   - DuckDuckGo as default search engine"
 echo "   - All sponsored content removed"
