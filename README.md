@@ -36,7 +36,7 @@ HenSurf provides multiple automated build options:
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/yourusername/henfire.git
-   cd henfire
+   cd HenSurf
    ```
 
 2. **Run the enhanced builder**:
